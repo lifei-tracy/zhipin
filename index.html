@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="x-dns-prefetch-control" content="on">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name="robots" content="all">
+    <meta name="author" content="lifei">
+    <meta name="copyright" content="lifei">
+    <title></title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <script language="javascript" type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <!-- 引入Vue3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入element-plus样式文件 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+    <!-- 引入element-plus组件库 -->
+    <script src="https://unpkg.com/element-plus"></script>
+
+    <script>
+        (function (doc, win) {
+            var docEl = doc.documentElement,
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function () {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    if (clientWidth >= 750) {
+                        docEl.style.fontSize = '100px';
+                    } else {
+                        docEl.style.fontSize = 100 * (clientWidth / 750) + 'px';
+                    }
+                };
+
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window);
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            background: #1c1c1d;
+        }
+
+        .wrapper {
+            width: 100%;
+            height: 100%;
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 0.2rem;
+            box-sizing: border-box;
+        }
+
+        .wrapper .wrapMain {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .wrapMain .logo {
+            width: 2rem;
+            margin-top: 1rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.8rem;
+            color: #fff;
+            text-align: center;
+            font-family: "楷体", "方正特雅宋简体";
+        }
+
+        .wrapMain .formWrap {
+            width: 100%;
+        }
+
+        .formWrap .formItem {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .formItem .title {
+            width: 1rem;
+            font-size: 0.24rem;
+            color: #fff;
+        }
+
+        .formItem .submitBtn {
+            width: 3rem;
+            height: 0.7rem;
+            margin: 0 auto;
+            background: #409eff;
+            border-radius: 8px;
+            font-size: 0.3rem;
+            line-height: 0.7rem;
+            text-align: center;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 0.2rem;
+        }
+    </style>
+</head>
+
+<body class="indexBody">
+    <div class="wrapper" id="app">
+        <div class="wrapMain">
+            <div class="logo">
+                <!-- <img src="indexLogo.png" alt=""> -->
+                至品
+            </div>
+            <div class="formWrap">
+                <div class="formItem">
+                    <div class="title">颜色：</div>
+                    <el-select v-model="colorValue" placeholder="请选择颜色" size="large" style="width:80%">
+                        <el-option v-for="item in colorOptions" :key="item.value" :label="item.label"
+                            :value="item.value" />
+                    </el-select>
+                </div>
+                <div class="formItem">
+                    <div class="title">数量：</div>
+                    <el-select v-model="amountValue" placeholder="请选择数量" size="large" style="width:80%">
+                        <el-option v-for="item in amountOptions" :key="item.value" :label="item.label"
+                            :value="item.value" />
+                    </el-select>
+                </div>
+                <div class="formItem">
+                    <div class="title">新旧：</div>
+                    <el-select v-model="plateTypeValue" placeholder="请选择新旧板式" size="large" style="width:80%">
+                        <el-option v-for="item in plateTypeOptions" :key="item.value" :label="item.label"
+                            :value="item.value" />
+                    </el-select>
+                </div>
+                <div class="formItem">
+                    <div class="title">印刷：</div>
+                    <el-select v-model="printingValue" placeholder="请选择印刷形式" size="large" style="width:80%">
+                        <el-option v-for="item in printingOptions" :key="item.value" :label="item.label"
+                            :value="item.value" />
+                    </el-select>
+                </div>
+                <div class="formItem">
+                    <div class="title">长度：</div>
+                    <el-input v-model.number="heightValue" style="width:80%" size="large" placeholder="请填写长度"
+                        type="number" />
+                </div>
+                <div class="formItem">
+                    <div class="title">宽度：</div>
+                    <el-input v-model.number="widthValue" style="width:80%" size="large" placeholder="请填写宽度"
+                        type="number" />
+                </div>
+                <div class="formItem">
+                    <div class="submitBtn" @click="submitMess">计算</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+<script>
+    const { createApp, ref } = Vue
+    const { ElMessageBox } = ElementPlus;
+    const APP = createApp({
+
+        setup () {
+            // 颜色
+            const colorValue = ref('')
+            const colorOptions = [
+                {
+                    value: '白卡',
+                    label: '白卡',
+                },
+                {
+                    value: '黑卡',
+                    label: '黑卡',
+                },
+                {
+                    value: '牛卡',
+                    label: '牛卡',
+                },
+                {
+                    value: '彩卡',
+                    label: '彩卡',
+                }
+            ]
+            // 颜色
+
+            // 数量
+            const amountValue = ref('')
+            const amountOptions = [
+                {
+                    value: '500',
+                    label: '500',
+                },
+                {
+                    value: '1000',
+                    label: '1000',
+                },
+                {
+                    value: '2000',
+                    label: '2000',
+                },
+                {
+                    value: '3000',
+                    label: '3000',
+                },
+                {
+                    value: '4000',
+                    label: '4000',
+                },
+                {
+                    value: '5000',
+                    label: '5000',
+                }
+            ]
+            // 数量
+
+            // 新旧
+            const plateTypeValue = ref('')
+            const plateTypeOptions = [
+                {
+                    value: '新版',
+                    label: '新版',
+                },
+                {
+                    value: '旧版',
+                    label: '旧版',
+                },
+
+            ]
+            // 新旧
+
+            // 印刷
+            const printingValue = ref('')
+            const printingOptions = [
+                {
+                    value: '空白',
+                    label: '空白',
+                },
+                {
+                    value: '彩印',
+                    label: '彩印',
+                },
+
+            ]
+            // 印刷
+
+            // 长度
+            const heightValue = ref('')
+            // 长度
+
+            // 宽度
+            const widthValue = ref('')
+            // 宽度
+
+            // 提交
+            const submitMess = () => {
+                if (!colorValue.value) {
+                    alert('请选择颜色')
+                    return false
+                }
+                if (!amountValue.value) {
+                    alert('请选择数量')
+                    return false
+                }
+                if (!plateTypeValue.value) {
+                    alert('请选择新旧')
+                    return false
+                }
+                if (!printingValue.value) {
+                    alert('请选择印刷')
+                    return false
+                }
+                if (!heightValue.value) {
+                    alert('请填写长度')
+                    return false
+                }
+                if (Number(heightValue.value) < 0) {
+                    alert('长度必须为正数')
+                    return false
+                }
+                if (!widthValue.value) {
+                    alert('请填写宽度')
+                    return false
+                }
+                if (Number(widthValue.value) < 0) {
+                    alert('宽度必须为正数')
+                    return false
+                }
+
+                let resultPrize = 0;
+                resultPrize = Number(heightValue.value) * Number(widthValue.value)
+                if (colorValue.value == '白卡') {
+                    resultPrize = resultPrize * 1.8 * Number(amountValue.value)
+                } else if (colorValue.value == '黑卡') {
+                    resultPrize = resultPrize * 1.4 * Number(amountValue.value)
+                } else if (colorValue.value == '牛卡') {
+                    resultPrize = resultPrize * 1 * Number(amountValue.value)
+                } else if (colorValue.value == '彩卡') {
+                    resultPrize = resultPrize * 1.9 * Number(amountValue.value)
+                }
+
+                if (plateTypeValue.value == '新版') {
+                    resultPrize = Number(resultPrize) + 150
+                } else if (plateTypeValue.value == '旧版') {
+                    resultPrize = Number(resultPrize) + 0
+                }
+                if (printingValue.value == '彩印') {
+                    if (amountValue.value == '500' || amountValue.value == '1000') {
+                        resultPrize = Number(resultPrize) + 500
+                    } else if (amountValue.value == '2000') {
+                        resultPrize = Number(resultPrize) + 550
+                    } else if (amountValue.value == '3000') {
+                        resultPrize = Number(resultPrize) + 700
+                    } else if (amountValue.value == '4000') {
+                        resultPrize = Number(resultPrize) + 750
+                    } else if (amountValue.value == '5000') {
+                        resultPrize = Number(resultPrize) + 800
+                    }
+                } else if (printingValue.value == '空白') {
+                    if (amountValue.value == '500' || amountValue.value == '1000' || amountValue.value == '2000') {
+                        resultPrize = Number(resultPrize) + 150
+                    } else if (amountValue.value == '3000') {
+                        resultPrize = Number(resultPrize) + 200
+                    } else if (amountValue.value == '4000') {
+                        resultPrize = Number(resultPrize) + 250
+                    } else if (amountValue.value == '5000') {
+                        resultPrize = Number(resultPrize) + 300
+                    }
+                }
+                resultPrize = Number(resultPrize) / Number(amountValue.value)
+                if (Number(heightValue.value) + Number(widthValue.value) >= 0.9) {
+                    resultPrize = Number(resultPrize) + 0.45
+                } else {
+                    resultPrize = Number(resultPrize) + 0.35
+                }
+                resultPrize = parseFloat(resultPrize).toFixed(2);
+                resultPrize = resultPrize.toString();
+
+                ElMessageBox.alert(resultPrize, '总价', {
+                    confirmButtonText: 'OK',
+                    callback: () => {
+                        // colorValue.value = ''
+                        // amountValue.value = ''
+                        // plateTypeValue.value = ''
+                        // printingValue.value = ''
+                        // heightValue.value = ''
+                        // widthValue.value = ''
+                    },
+                })
+            }
+
+            return {
+                colorValue,
+                colorOptions,
+                amountValue,
+                amountOptions,
+                plateTypeValue,
+                plateTypeOptions,
+                printingValue,
+                printingOptions,
+                heightValue,
+                widthValue,
+                submitMess
+            }
+        }
+    })
+    APP.use(ElementPlus).mount('#app')
+</script>
+
+</html>
